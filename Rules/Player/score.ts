@@ -158,13 +158,20 @@ export const getRules: (
     )
   ),
 
-  // 20 for each Wonder, obsolete or not.
+  // 20 for each Wonder, obsolete or not, but not one lost with its city. A Wonder can still be registered against a
+  //  destroyed city in games saved before that was fixed (civ-clone/web-renderer#975); it belongs to nobody. v474.05
+  //  skips it, `CITY.C` 541-553: `city_id = marvel_site[i]; if (city_id != -1 && city_id != 128 && ...owner == player)
+  //  { ... marvel_points += 20; }`, as `vanish` (`ECONOMY.C` 94-96) sets `marvel_site[j] = 0x80` when its city goes.
   new Score(
     'civ1-score:player/score/wonders',
     new Effect(
       (player: Player): IScoreTerm => ({
         term: 'wonders',
-        value: 20 * wonderRegistry.getByPlayer(player).length,
+        value:
+          20 *
+          wonderRegistry
+            .getByPlayer(player)
+            .filter((wonder): boolean => !wonder.city().destroyed()).length,
       })
     )
   ),
