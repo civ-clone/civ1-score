@@ -20,6 +20,7 @@ const setUp = ({
   tax = 30,
   luxuries = 0,
   wonders = 0,
+  lostWonders = 0,
   polluted = 0,
   peace = 0,
   year = 1000,
@@ -58,7 +59,16 @@ const setUp = ({
       { getByCity: () => cityGrowth } as any,
       { getByCity: () => [] } as any,
       { getByPlayer: () => rates } as any,
-      { getByPlayer: () => new Array(wonders) } as any,
+      {
+        getByPlayer: () => [
+          ...new Array(wonders).fill({
+            city: () => ({ destroyed: () => false }),
+          }),
+          ...new Array(lostWonders).fill({
+            city: () => ({ destroyed: () => true }),
+          }),
+        ],
+      } as any,
       {
         filter: (predicate: (spaceship: any) => boolean) =>
           (spaceship
@@ -139,6 +149,10 @@ describe('civ1-score', (): void => {
 
   it('counts 20 for each Wonder', (): void => {
     expect(term('wonders', setUp({ wonders: 3 }))).to.equal(60);
+  });
+
+  it('does not count a Wonder lost with its destroyed city', (): void => {
+    expect(term('wonders', setUp({ wonders: 1, lostWonders: 1 }))).to.equal(20);
   });
 
   it('takes 10 for each polluted square', (): void => {
