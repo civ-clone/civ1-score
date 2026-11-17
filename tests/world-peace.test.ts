@@ -1,3 +1,5 @@
+import Barbarian from '@civ-clone/base-civilization-barbarian/Barbarian';
+import Civilization from '@civ-clone/core-civilization/Civilization';
 import RuleRegistry from '@civ-clone/core-rule/RuleRegistry';
 import Defeated from '@civ-clone/core-unit/Rules/Defeated';
 import Start from '@civ-clone/core-turn-based-game/Rules/Start';
@@ -51,5 +53,37 @@ describe('world peace', (): void => {
     ruleRegistry.process(Defeated, null as any, null as any, null as any);
 
     expect(worldPeaceRegistry.length).to.equal(0);
+  });
+
+  // v474.05 counts only a fight between two civilizations; the Barbarians are civ 0 (civ-clone/web-renderer#956).
+  const unitOf = (civilization: unknown) =>
+    ({ player: () => ({ civilization: () => civilization }) } as any);
+
+  it("isn't ended by a fight with the Barbarians, on either side", (): void => {
+    const { ruleRegistry, turn, worldPeaceRegistry } = setUp(() => 100),
+      barbarian = unitOf(new Barbarian()),
+      civilization = unitOf(new Civilization());
+
+    turn.increment();
+    ruleRegistry.process(Start, turn);
+    ruleRegistry.process(Defeated, barbarian, civilization, null as any);
+    ruleRegistry.process(Defeated, civilization, barbarian, null as any);
+
+    expect(worldPeaceRegistry.turns()).to.equal(1);
+  });
+
+  it('is ended by a fight between two civilizations', (): void => {
+    const { ruleRegistry, turn, worldPeaceRegistry } = setUp(() => 100);
+
+    turn.increment();
+    ruleRegistry.process(Start, turn);
+    ruleRegistry.process(
+      Defeated,
+      unitOf(new Civilization()),
+      unitOf(new Civilization()),
+      null as any
+    );
+
+    expect(worldPeaceRegistry.turns()).to.equal(0);
   });
 });

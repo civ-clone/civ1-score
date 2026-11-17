@@ -31,6 +31,7 @@
     "typescript": "^4.0.0"
   },
   "dependencies": {
+    "@civ-clone/base-civilization-barbarian": "^0.1.0",
     "@civ-clone/base-spaceship-yield-population": "^0.1.1",
     "@civ-clone/base-tile-improvement-pollution": "^0.1.0",
     "@civ-clone/base-trade-rate-luxuries": "^0.1.0",
